@@ -30,16 +30,16 @@ class RequestController {
     // Switch between data type
     switch (contentType?.split(";")[0]) {
       case "application/x-www-form-urlencoded": {
-        this.socket.write("<xml></xml>");
+        this.socket.write("HTTP/1.1 200 OK\r\nContent-Type: application/x-www-form-urlencoded\r\nContent-Length: 11\r\n\r\n<xml></xml>");
         break;
       }
       case "application/json": {
-        this.socket.write("{}");
+        this.socket.write("HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nContent-Length: 2\r\n\r\n{}");
         break;
       }
       default: {
         console.log("Unsupported content type:", contentType);
-        this.socket.write("");
+        this.socket.write("HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: 0\r\n\r\n");
         break;
       }
     }
