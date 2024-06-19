@@ -1,0 +1,18 @@
+{
+  "name": "simplesocket",
+  "version": "1.0.0",
+  "main": "./src/main.js",
+  "scripts": {
+    "start": "node ./src/main.js",
+    "format": "npx prettier --write \"src/**/*.js\""
+  },
+  "keywords": [],
+  "author": "",
+  "license": "MIT",
+  "description": "Used to help debug connections for xenia.",
+  "devDependencies": {
+    "@eslint/js": "^9.5.0",
+    "eslint": "^9.5.0",
+    "globals": "^15.6.0"
+  }
+}
