@@ -28,7 +28,7 @@ class RequestController {
     console.log("Parsed Body:", body);
 
     // Switch between data type
-    switch (contentType.split(";")[0]) {
+    switch (contentType?.split(";")[0]) {
       case "application/x-www-form-urlencoded": {
         this.socket.write("<xml></xml>");
         break;
@@ -39,6 +39,7 @@ class RequestController {
       }
       default: {
         console.log("Unsupported content type:", contentType);
+        this.socket.write("");
         break;
       }
     }
