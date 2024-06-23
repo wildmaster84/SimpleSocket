@@ -4,7 +4,6 @@ const RequestController = require("./request.controller");
 // Create a server object
 const server = net.createServer((socket) => {
   console.log("Client connected");
-
   // Handle incoming data
   socket.on("data", (data) => {
     const request = new RequestController(data, socket);
@@ -23,6 +22,6 @@ const server = net.createServer((socket) => {
 });
 
 // Start the server on port 3000
-server.listen(80, () => {
-  console.log("Server listening on port 80");
+server.listen(8000, () => {
+  console.log("Server listening on port 8000");
 });
