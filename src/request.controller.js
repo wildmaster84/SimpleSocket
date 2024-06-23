@@ -6,8 +6,7 @@ class RequestController {
     this.socket = socket;
   }
   process() {
-    console.log("Raw Data (Hex):", this.data.toString("hex"));
-
+    //console.log("Raw Data (Hex):", this.data.toString("hex"));
     const request = this.data.toString();
     // Split request into headers and body
     const [headerPart, bodyPart] = request.split("\r\n\r\n");
@@ -20,12 +19,12 @@ class RequestController {
         return acc;
       }, {});
 
-    console.log("Headers:", headers);
+    //console.log("Headers:", headers);
 
     // Parse the URL-encoded body
     const contentType = headers["content-type"];
     const body = querystring.parse(bodyPart);
-    console.log("Parsed Body:", body);
+    //console.log("Parsed Body:", body);
 
     // Switch between data type
     switch (contentType?.split(";")[0]) {
@@ -38,12 +37,12 @@ class RequestController {
         break;
       }
       default: {
-        console.log("Unsupported content type:", contentType);
-        this.socket.write("HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: 0\r\n\r\n");
+        //console.log("Unsupported content type:", contentType);
+        console.log("Data", this.data.toString());
         break;
       }
     }
-    this.socket.end();
+    //this.socket.end();
   }
 }
 
