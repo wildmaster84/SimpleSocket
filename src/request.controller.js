@@ -7,9 +7,8 @@ class RequestController {
     this.socket = socket;
   }
   process() {
-    const request = this.data.toString();
-    const action = request.substring(0, 4);
-    new CommandController(action, request, this.socket).process();
+    const action = this.data.substring(0, 4);
+    new CommandController(action, this.data, this.socket).process();
   }
 }
 
