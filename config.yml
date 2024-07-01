@@ -1,0 +1,5 @@
+server:
+  debug: true # Debug Mode
+  proxy: 10134 # Proxy port
+  port: 10135 # Servers port
+  ip: "68.46.244.148" # Servers public ip for redirecting
