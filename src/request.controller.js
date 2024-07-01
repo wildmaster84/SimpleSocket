@@ -1,14 +1,13 @@
-const querystring = require("querystring");
 const CommandController = require("./command.controller");
 
 class RequestController {
-  constructor(data, socket) {
+  constructor(data, socket, ServerManager) {
     this.data = data;
     this.socket = socket;
+    this.serverManager = ServerManager;
   }
   process() {
-    const action = this.data.substring(0, 4);
-    new CommandController(action, this.data, this.socket).process();
+    new CommandController(this.data, this.socket, this.serverManager).process();
   }
 }
 
