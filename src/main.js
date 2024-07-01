@@ -84,7 +84,7 @@ class ServerManager {
       "cate"
     ];
 
-    sendHeartbeat(socket, 30);
+    sendHeartbeat(socket, 29);
     socket.on("data", (data) => {
       if (data.length < 4 || !schem.includes(data.toString().substring(0, 4))) {
         console.log(`invalid data ${data.toString()}`);
@@ -109,38 +109,38 @@ class ServerManager {
   }
 }
 function sendHeartbeat(socket, interval) {
-    const intervalMs = interval * 1000; // Convert seconds to milliseconds
-    const message = `~png\0\0\0\0\0\0\0#REF=${getTime()}\0`;
-    if (!socket.destroyed) {
-        socket.write(message);
-        setTimeout(sendHeartbeat, intervalMs, socket, interval);
-        console.log("[i] Sending heartbeat");
-    } else {
-        console.log("[i] Socket is destroyed, cannot send message");
-        return; // Exit if the socket is destroyed
-    }
+  const intervalMs = interval * 1000; // Convert seconds to milliseconds
+  const message = `~png\0\0\0\0\0\0\0#REF=${getTime()}\0`;
+  if (!socket.destroyed) {
+    socket.write(message);
+    setTimeout(sendHeartbeat, intervalMs, socket, interval);
+    console.log("[i] Sending heartbeat");
+  } else {
+    console.log("[i] Socket is destroyed, cannot send message");
+    return; // Exit if the socket is destroyed
+  }
 }
 function getTime() {
-    const now = new Date();
+  const now = new Date();
 
-    const year = now.getFullYear();
-    const month = now.getMonth() + 1; // Months are zero indexed, so January is 0
-    const day = now.getDate();
-    const hours = now.getHours();
-    const minutes = now.getMinutes();
-    const seconds = now.getSeconds();
+  const year = now.getFullYear();
+  const month = now.getMonth() + 1; // Months are zero indexed, so January is 0
+  const day = now.getDate();
+  const hours = now.getHours();
+  const minutes = now.getMinutes();
+  const seconds = now.getSeconds();
 
-    // Pad single digit values with leading zeros
-    const formattedMonth = month; // < 10 ? `0${month}` : month;
-    const formattedDay = day < 10 ? `0${day}` : day;
-    const formattedHours = hours < 10 ? `0${hours}` : hours;
-    const formattedMinutes = minutes < 10 ? `0${minutes}` : minutes;
-    const formattedSeconds = seconds < 10 ? `0${seconds}` : seconds;
+  // Pad single digit values with leading zeros
+  const formattedMonth = month; // < 10 ? `0${month}` : month;
+  const formattedDay = day < 10 ? `0${day}` : day;
+  const formattedHours = hours < 10 ? `0${hours}` : hours;
+  const formattedMinutes = minutes < 10 ? `0${minutes}` : minutes;
+  const formattedSeconds = seconds < 10 ? `0${seconds}` : seconds;
 
-    // Construct the formatted date-time string
-    const formattedDateTime = `${year}.${formattedMonth}.${formattedDay}-${formattedHours}:${formattedMinutes}:${formattedSeconds}`;
+  // Construct the formatted date-time string
+  const formattedDateTime = `${year}.${formattedMonth}.${formattedDay}-${formattedHours}:${formattedMinutes}:${formattedSeconds}`;
 
-    return formattedDateTime;
+  return formattedDateTime;
 }
 
 // Initialize the ServerManager with your configuration

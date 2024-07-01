@@ -301,11 +301,11 @@ class CommandController {
 
             `\tLO=enGB\tX=\tUS=0\tPRES=1\tVER=7\tC=,,,,,,,,\0+mgm\0\0\0\0\0\0`,
             Buffer.from([0x02, 0xcd], "utf16le"),
-            `IDENT=73\tWHEN=2024.6.28-8:56:26\tNAME=${gamertag}\tHOST=@brobot948\tROOM=0\tMAXSIZE=9\tMINSIZE=2\tCOUNT=2\tPRIV=0\tCUSTFLAGS=413345024\tSYSFLAGS=64\tEVID=0\tEVGID=0\tNUMPART=1\tSEED=73\tGPSHOST=${gamertag}\tGPSREGION=0\tGAMEMODE=0\tGAMEPORT=3074\tVOIPPORT=0\tWHENC=2024.6.28-8:56:26\tSESS=None\tPLATPARAMS=None\tPARTSIZE0=9\tPARAMS=,,,1fc00b80,656e4742\tPARTPARAMS0=\tOPPO0=@brobot948\tOPPART0=0\tOPFLAG0=0\tPRES0=0\tOPID0=948\tADDR0=${ServerManager.ServerIP}\tLADDR0=127.0.0.3\tMADDR0=\tOPPARAM0=PUSMC1A3????,,c0-1,,,a,,,3a54e32a\tOPPO1=${gamertag}\tOPPART1=0\tOPFLAG1=413345024\tPRES1=0\tOPID1=947\tADDR1=${clientIp}\tLADDR1=${clientIp}\tMADDR1=`
-          ,
-          maddr,
-          "\tOPPARAM1=PUSMC1A3????,,c00,,,a,,,3a54e32a\0\0"
-        ));
+            `IDENT=73\tWHEN=2024.6.28-8:56:26\tNAME=${gamertag}\tHOST=@brobot948\tROOM=0\tMAXSIZE=9\tMINSIZE=2\tCOUNT=2\tPRIV=0\tCUSTFLAGS=413345024\tSYSFLAGS=64\tEVID=0\tEVGID=0\tNUMPART=1\tSEED=73\tGPSHOST=${gamertag}\tGPSREGION=0\tGAMEMODE=0\tGAMEPORT=3074\tVOIPPORT=0\tWHENC=2024.6.28-8:56:26\tSESS=None\tPLATPARAMS=None\tPARTSIZE0=9\tPARAMS=,,,1fc00b80,656e4742\tPARTPARAMS0=\tOPPO0=@brobot948\tOPPART0=0\tOPFLAG0=0\tPRES0=0\tOPID0=948\tADDR0=${this.serverManager.serverIP}\tLADDR0=127.0.0.3\tMADDR0=\tOPPARAM0=PUSMC1A3????,,c0-1,,,a,,,3a54e32a\tOPPO1=${gamertag}\tOPPART1=0\tOPFLAG1=413345024\tPRES1=0\tOPID1=947\tADDR1=${clientIp}\tLADDR1=${clientIp}\tMADDR1=`,
+            maddr,
+            "\tOPPARAM1=PUSMC1A3????,,c00,,,a,,,3a54e32a\0\0"
+          )
+        );
         break;
       }
       case "hchk": {
@@ -330,7 +330,7 @@ class CommandController {
       case "gset": {
         // MUST be 791 bytes
         this.clientSocket.write(
-          this.mergeBytes(
+          mergeBytes(
             `gset\0\0\0\0\0\0`,
             Buffer.from([0x03, 0x17], "utf16le"),
             `IDENT=73\tWHEN=2024.6.28-8:56:26\tNAME=${gamertag}\tHOST=@brobot948\tROOM=0\tMAXSIZE=9\tMINSIZE=2\tCOUNT=2\tPRIV=0\tCUSTFLAGS=413345024\tSYSFLAGS=64\tEVID=0\tEVGID=0\tNUMPART=1\tSEED=73\tGPSHOST=${gamertag}\tGPSREGION=0\tGAMEMODE=0\tGAMEPORT=3074\tVOIPPORT=0\tWHENC=2024.6.28-8:56:26\tSESS=$`,
@@ -352,7 +352,7 @@ class CommandController {
               [0xfb, 0xf3, 0xe3, 0xf3, 0xb6, 0xbc, 0xcd, 0xf1, 0xab, 0x80],
               "utf16le"
             ),
-            `\tPARTSIZE0=9\tPARAMS=,,,1fc00b80,656e4742\tPARTPARAMS0=\tOPPO0=@brobot948\tOPPART0=0\tOPFLAG0=0\tPRES0=0\tOPID0=948\tADDR0=${ServerManager.ServerIP}\tLADDR0=127.0.0.3\tMADDR0=\tOPPARAM0=PUSMC1A3????,,c0-1,,,a,,,3a54e32a\tOPPO1=${gamertag}\tOPPART1=0\tOPFLAG1=413345024\tPRES1=0\tOPID1=947\tADDR1=${clientIp}\tLADDR1=${clientIp}\tMADDR1=`,
+            `\tPARTSIZE0=9\tPARAMS=,,,1fc00b80,656e4742\tPARTPARAMS0=\tOPPO0=@brobot948\tOPPART0=0\tOPFLAG0=0\tPRES0=0\tOPID0=948\tADDR0=${this.serverManager.serverIP}\tLADDR0=127.0.0.3\tMADDR0=\tOPPARAM0=PUSMC1A3????,,c0-1,,,a,,,3a54e32a\tOPPO1=${gamertag}\tOPPART1=0\tOPFLAG1=413345024\tPRES1=0\tOPID1=947\tADDR1=${clientIp}\tLADDR1=${clientIp}\tMADDR1=`,
             maddr,
             "\tOPPARAM1=PUSMC1A3????,,c00,,,a,,,3a54e32a\0\0"
           )
@@ -380,7 +380,7 @@ class CommandController {
               [0xfb, 0xf3, 0xe3, 0xf3, 0xb6, 0xbc, 0xcd, 0xf1, 0xab, 0x80],
               "utf16le"
             ),
-            `\tPARTSIZE0=9\tPARAMS=,,,1fc00b80,656e4742\tPARTPARAMS0=\tOPPO0=@brobot948\tOPPART0=0\tOPFLAG0=0\tPRES0=0\tOPID0=948\tADDR0=${ServerManager.ServerIP}\tLADDR0=127.0.0.3\tMADDR0=\tOPPARAM0=PUSMC1A3????,,c0-1,,,a,,,3a54e32a\tOPPO1=${gamertag}\tOPPART1=0\tOPFLAG1=413345024\tPRES1=0\tOPID1=947\tADDR1=${clientIp}\tLADDR1=${clientIp}\tMADDR1=`,
+            `\tPARTSIZE0=9\tPARAMS=,,,1fc00b80,656e4742\tPARTPARAMS0=\tOPPO0=@brobot948\tOPPART0=0\tOPFLAG0=0\tPRES0=0\tOPID0=948\tADDR0=${this.serverManager.serverIP}\tLADDR0=127.0.0.3\tMADDR0=\tOPPARAM0=PUSMC1A3????,,c0-1,,,a,,,3a54e32a\tOPPO1=${gamertag}\tOPPART1=0\tOPFLAG1=413345024\tPRES1=0\tOPID1=947\tADDR1=${clientIp}\tLADDR1=${clientIp}\tMADDR1=`,
             maddr,
             "\tOPPARAM1=PUSMC1A3????,,c00,,,a,,,3a54e32a\0\0"
           )
@@ -432,11 +432,11 @@ class CommandController {
         break;
       }
       case "opup": {
-        this.clientSocket.write(
+        this.clientSocket.write(mergeBytes(
           "opup\0\0\0\0\0\0\0",
           Buffer.from([0x0d], "utf16le"),
           "\0"
-        );
+        ));
         break;
       }
       case "rrup": {
