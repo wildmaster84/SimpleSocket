@@ -81,7 +81,9 @@ class ServerManager {
       "opup",
       "rrup",
       "gqwk",
-      "cate"
+      "cate",
+      "snap",
+      "gsea"
     ];
 
     sendHeartbeat(socket, 25, false);
