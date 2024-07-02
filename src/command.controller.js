@@ -5,6 +5,8 @@ var lastType;
 var inGame;
 var uid;
 var maddr;
+var clientIp;
+var token;
 class CommandController {
   constructor(data, socket, ServerManager) {
     this.action = data.substring(0, 4);
@@ -14,7 +16,6 @@ class CommandController {
   }
 
   process(ServerManager) {
-    var clientIp = this.clientSocket.remoteAddress;
     const osKey = crypto
       .createHash("sha256")
       .update(this.serverManager.serverIP)
@@ -27,16 +28,19 @@ class CommandController {
         // if the tic and dir packet merge then respond.
         if (this.message.length > 23) {
           let dir = `@dir\0\0\0\0\0\0\0XADDR=${this.serverManager.serverIP}\tPORT=${this.serverManager.serverPort}\tMASK=ffff\tSESS=1\0`;
-          this.clientSocket.write(PadMask(dir, 88));
+          this.clientSocket.write(PadString(dir, "MASK=", 88, "f"));
         }
         break;
       }
       case "@dir": {
         let dir = `@dir\0\0\0\0\0\0\0XADDR=${this.serverManager.serverIP}\tPORT=${this.serverManager.serverPort}\tMASK=ffff\tSESS=1\0`;
-        this.clientSocket.write(PadMask(dir, 88));
+        this.clientSocket.write(PadString(dir, "MASK=", 88, "f"));
         break;
       }
       case "addr": {
+        clientIp = this.message.split("ADDR=")[1].split("\x0a")[0];
+        var message = `~png\0\0\0\0\0\0\0#REF=${getTime()}\0`;
+        this.clientSocket.write(message);
         break;
       }
       case "skey": {
@@ -183,13 +187,22 @@ class CommandController {
           .update(this.xuid)
           .digest("hex")
           .slice(0, 16);
-        console.log(`${gamertag}(XUID -> ${this.xuid}) joined the server.`);
+        token = crypto
+          .createHash("sha256")
+          .update(this.xuid + uid)
+          .digest("hex")
+          .slice(0, 41);
+        console.log(
+          `${gamertag}(XUID -> ${this.xuid} IP -> ${clientIp}) joined the server.`
+        );
+
+        let auth = PadString(`LAST=2018.1.1-00:00:00\tTOS=1\tSHARE=1\t_LUID=$${uid}\tNAME=${gamertag}\tPERSONAS=${gamertag}\tMAIL=mail@example.com\tBORN=19700101\tFROM=GB\tLOC=enGB\tSPAM=YN\tSINCE=2008.1.1-00:00:00\tGFIDS=1\tADDR=${clientIp}\tTOKEN=${token}\t`, `TOKEN=${token}`, 391, "0").slice(0, -1) + ".\0";
 
         this.clientSocket.write(
           mergeBytes(
             `auth\0\0\0\0\0\0`,
             Buffer.from([0x01, 0x94], "utf16le"),
-            `LAST=2018.1.1-00:00:00\tTOS=1\tSHARE=1\t_LUID=$${uid}\tNAME=${gamertag}\tPERSONAS=${gamertag}\tMAIL=mail@example.com\tBORN=19700101\tFROM=GB\tLOC=enGB\tSPAM=YN\tSINCE=2008.1.1-00:00:00\tGFIDS=1\tADDR=${clientIp}\tTOKEN=pc6r0gHSgZXe1dgwo_CegjBCn24uzUC7KVq1LJDKJ0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000.\0`
+            auth
           )
         );
 
@@ -205,11 +218,13 @@ class CommandController {
             0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80
           ])
         );
+        let lkey = `KNAME=${gamertag}\tPERS=${gamertag}\tLAST=2018.1.1-00:00:00\tPLAST=2018.1.1-00:00:00\tSINCE=2008.1.1-00:00:00\tPSINCE=2008.1.1-00:00:00\tLKEY=\tSTAT=,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,\tLOC=enGB\tA=${clientIp}\tMA=^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\tLA=${clientIp}\tIDLE=50000\0`;
+        let pers = PadString(lkey, "LKEY=", 301, "0").split("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^")[0].replace("\tSTAT", ".\tSTAT");
         this.clientSocket.write(
           mergeBytes(
             `pers\0\0\0\0\0\0`,
             Buffer.from([0x01], "utf16le"),
-            `KNAME=${gamertag}\tPERS=${gamertag}\tLAST=2018.1.1-00:00:00\tPLAST=2018.1.1-00:00:00\tSINCE=2008.1.1-00:00:00\tPSINCE=2008.1.1-00:00:00\tLKEY=000000000000000000000000000.\tSTAT=,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,\tLOC=enGB\tA=${clientIp}\tMA=`,
+            pers,
             maddr,
             `\tLA=${clientIp}\tIDLE=50000\0`
           )
@@ -229,14 +244,14 @@ class CommandController {
               "MIN_TIME_SPENT_SYNCYING_TIME=1\tMAX_TIME_SPENT_SYNCYING_TIME=30\tMAX_TIME_TO_WAIT_FOR_START_TIME=30\tMAX_TIME_TO_WAIT_FOR_SILENT_CLIENT_READY=30\tMAX_TIME_TO_WAIT_FOR_COMMUNICATING_CLIENT_READY=45\tTIME_GAP_TO_LEAVE_BEFORE_START_TIME=5\tIDLE_TIMEOUT=30000\tSEARCH_QUERY_TIME_INTERVAL=30000\tNAT_TEST_PACKET_TIMEOUT=30000\tTOS_BUFFER_SIZE=250000\tNEWS_BUFFER_SIZE=85000\tLOG_OFF_ON_EXIT_ONLINE_MENU=FALSE\tTELEMETRY_FILTERS_FIRST_USE=\tTELEMETRY_FILTERS_NORMAL_USE=\tTIME_BETWEEN_STATS_CHECKS=30\tTIME_BETWEEN_ROAD_RULES_UPLOADS=1\tTIME_BETWEEN_ROAD_RULES_DOWNLOADS=900\tTIME_BEFORE_RETRY_AFTER_FAILED_BUDDY_UPLOAD=600\tTIME_BETWEEN_OFFLINE_PROGRESSION_UPLOAD=600\0"
             )
           );
+          let fillled = fillString(`I=947\tN=${gamertag}\tM=${gamertag}\tF=U\tA=${clientIp}\tP=1\tS=,,\tG=0\tAT=\tCL=511\tLV=1049601\tMD=0\tLA=${clientIp}\tHW=0\tRP=0\tMA=^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\tLO=enGB\tX=\tUS=0\tPRES=1\tVER=7\tC=,,,,,,,,\0`, 209, "\0").split("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^")[1];
           this.clientSocket.write(
             mergeBytes(
               `+who\0\0\0\0\0\0\0`,
               Buffer.from([0xef], "utf16le"),
               `I=947\tN=${gamertag}\tM=${gamertag}\tF=U\tA=${clientIp}\tP=1\tS=,,\tG=0\tAT=\tCL=511\tLV=1049601\tMD=0\tLA=${clientIp}\tHW=0\tRP=0\tMA=`,
               maddr,
-
-              "\tLO=enGB\tX=\tUS=0\tPRES=1\tVER=7\tC=,,,,,,,,\0"
+              fillled
             )
           );
         }
@@ -292,6 +307,8 @@ class CommandController {
             "\0"
           )
         );
+
+        let trailing = fillString(`I=947\tN=${gamertag}\tM=${gamertag}\tF=U\tA=${clientIp}\tP=1\tS=,,\tG=73\tAT=\tCL=511\tLV=1049601\tMD=0\tLA=${clientIp}\tHW=0\tRP=0\tMA=^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\tLO=enGB\tX=\tUS=0\tPRES=1\tVER=7\tC=,,,,,,,,\0+mgm\0\0\0\0\0\0\0\0IDENT=73\tWHEN=2024.6.28-8:56:26\tNAME=${gamertag}\tHOST=@brobot948\tROOM=0\tMAXSIZE=9\tMINSIZE=2\tCOUNT=2\tPRIV=0\tCUSTFLAGS=413345024\tSYSFLAGS=64\tEVID=0\tEVGID=0\tNUMPART=1\tSEED=73\tGPSHOST=${gamertag}\tGPSREGION=0\tGAMEMODE=0\tGAMEPORT=3074\tVOIPPORT=0\tWHENC=2024.6.28-8:56:26\tSESS=None\tPLATPARAMS=None\tPARTSIZE0=9\tPARAMS=,,,1fc00b80,656e4742\tPARTPARAMS0=\tOPPO0=@brobot948\tOPPART0=0\tOPFLAG0=0\tPRES0=0\tOPID0=948\tADDR0=${this.serverManager.serverIP}\tLADDR0=127.0.0.3\tMADDR0=\tOPPARAM0=PUSMC1A3????,,c0-1,,,a,,,3a54e32a\tOPPO1=${gamertag}\tOPPART1=0\tOPFLAG1=413345024\tPRES1=0\tOPID1=947\tADDR1=${clientIp}\tLADDR1=${clientIp}\tMADDR1=^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\tOPPARAM1=PUSMC1A3????,,c00,,,a,,,3a54e32a\0\0`, 301, "0").split("3a54e32a\0\0")[1];
         this.clientSocket.write(
           mergeBytes(
             `+who\0\0\0\0\0\0\0`,
@@ -303,7 +320,7 @@ class CommandController {
             Buffer.from([0x02, 0xcd], "utf16le"),
             `IDENT=73\tWHEN=2024.6.28-8:56:26\tNAME=${gamertag}\tHOST=@brobot948\tROOM=0\tMAXSIZE=9\tMINSIZE=2\tCOUNT=2\tPRIV=0\tCUSTFLAGS=413345024\tSYSFLAGS=64\tEVID=0\tEVGID=0\tNUMPART=1\tSEED=73\tGPSHOST=${gamertag}\tGPSREGION=0\tGAMEMODE=0\tGAMEPORT=3074\tVOIPPORT=0\tWHENC=2024.6.28-8:56:26\tSESS=None\tPLATPARAMS=None\tPARTSIZE0=9\tPARAMS=,,,1fc00b80,656e4742\tPARTPARAMS0=\tOPPO0=@brobot948\tOPPART0=0\tOPFLAG0=0\tPRES0=0\tOPID0=948\tADDR0=${this.serverManager.serverIP}\tLADDR0=127.0.0.3\tMADDR0=\tOPPARAM0=PUSMC1A3????,,c0-1,,,a,,,3a54e32a\tOPPO1=${gamertag}\tOPPART1=0\tOPFLAG1=413345024\tPRES1=0\tOPID1=947\tADDR1=${clientIp}\tLADDR1=${clientIp}\tMADDR1=`,
             maddr,
-            "\tOPPARAM1=PUSMC1A3????,,c00,,,a,,,3a54e32a\0\0"
+            `\tOPPARAM1=PUSMC1A3????,,c00,,,a,,,3a54e32a\0\0${trailing}`
           )
         );
         break;
@@ -316,19 +333,21 @@ class CommandController {
             "\0"
           )
         );
+        let trailing = fillString(`I=947\tN=${gamertag}\tM=${gamertag}\tF=U\tA=${clientIp}\tP=1\tS=,,\tG=73\tAT=\tCL=511\tLV=1049601\tMD=0\tLA=${clientIp}\tHW=0\tRP=0\tMA=^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\tLO=enGB\tX=\tUS=0\tPRES=1\tVER=7\tC=,,,,,,,,\0`, 105, "\0").split("C=,,,,,,,,\0")[1];
         this.clientSocket.write(
           mergeBytes(
             `+who\0\0\0\0\0\0\0`,
             Buffer.from([0xf0], "utf16le"),
             `I=947\tN=${gamertag}\tM=${gamertag}\tF=U\tA=${clientIp}\tP=1\tS=,,\tG=73\tAT=\tCL=511\tLV=1049601\tMD=0\tLA=${clientIp}\tHW=0\tRP=0\tMA=`,
             maddr,
-            "\tLO=enGB\tX=\tUS=0\tPRES=1\tVER=7\tC=,,,,,,,,\0"
+            `\tLO=enGB\tX=\tUS=0\tPRES=1\tVER=7\tC=,,,,,,,,\0${trailing}`
           )
         );
         break;
       }
       case "gset": {
         // MUST be 791 bytes
+        let trailing = fillString(`IDENT=73\tWHEN=2024.6.28-8:56:26\tNAME=${gamertag}\tHOST=@brobot948\tROOM=0\tMAXSIZE=9\tMINSIZE=2\tCOUNT=2\tPRIV=0\tCUSTFLAGS=413345024\tSYSFLAGS=64\tEVID=0\tEVGID=0\tNUMPART=1\tSEED=73\tGPSHOST=${gamertag}\tGPSREGION=0\tGAMEMODE=0\tGAMEPORT=3074\tVOIPPORT=0\tWHENC=2024.6.28-8:56:26\tSESS=$00000000000000000000000000000000000000000000000000000000000000000000000\tPLATPARAMS=0000000000\tPARTSIZE0=9\tPARAMS=,,,1fc00b80,656e4742\tPARTPARAMS0=\tOPPO0=@brobot948\tOPPART0=0\tOPFLAG0=0\tPRES0=0\tOPID0=948\tADDR0=${this.serverManager.serverIP}\tLADDR0=127.0.0.3\tMADDR0=\tOPPARAM0=PUSMC1A3????,,c0-1,,,a,,,3a54e32a\tOPPO1=${gamertag}\tOPPART1=0\tOPFLAG1=413345024\tPRES1=0\tOPID1=947\tADDR1=${clientIp}\tLADDR1=${clientIp}\tMADDR1=^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\tOPPARAM1=PUSMC1A3????,,c00,,,a,,,3a54e32a\0\0`, 105, "\0").split("3a54e32a\0\0")[1];
         this.clientSocket.write(
           mergeBytes(
             `gset\0\0\0\0\0\0`,
@@ -354,7 +373,7 @@ class CommandController {
             ),
             `\tPARTSIZE0=9\tPARAMS=,,,1fc00b80,656e4742\tPARTPARAMS0=\tOPPO0=@brobot948\tOPPART0=0\tOPFLAG0=0\tPRES0=0\tOPID0=948\tADDR0=${this.serverManager.serverIP}\tLADDR0=127.0.0.3\tMADDR0=\tOPPARAM0=PUSMC1A3????,,c0-1,,,a,,,3a54e32a\tOPPO1=${gamertag}\tOPPART1=0\tOPFLAG1=413345024\tPRES1=0\tOPID1=947\tADDR1=${clientIp}\tLADDR1=${clientIp}\tMADDR1=`,
             maddr,
-            "\tOPPARAM1=PUSMC1A3????,,c00,,,a,,,3a54e32a\0\0"
+            `\tOPPARAM1=PUSMC1A3????,,c00,,,a,,,3a54e32a\0\0${trailing}`
           )
         );
         this.clientSocket.write(
@@ -382,7 +401,7 @@ class CommandController {
             ),
             `\tPARTSIZE0=9\tPARAMS=,,,1fc00b80,656e4742\tPARTPARAMS0=\tOPPO0=@brobot948\tOPPART0=0\tOPFLAG0=0\tPRES0=0\tOPID0=948\tADDR0=${this.serverManager.serverIP}\tLADDR0=127.0.0.3\tMADDR0=\tOPPARAM0=PUSMC1A3????,,c0-1,,,a,,,3a54e32a\tOPPO1=${gamertag}\tOPPART1=0\tOPFLAG1=413345024\tPRES1=0\tOPID1=947\tADDR1=${clientIp}\tLADDR1=${clientIp}\tMADDR1=`,
             maddr,
-            "\tOPPARAM1=PUSMC1A3????,,c00,,,a,,,3a54e32a\0\0"
+            `\tOPPARAM1=PUSMC1A3????,,c00,,,a,,,3a54e32a\0\0${trailing}`
           )
         );
         break;
@@ -405,10 +424,13 @@ class CommandController {
       }
       case "gdel": {
         this.clientSocket.write(
-          "gdel\0\0\0\0\0\0\0",
-          Buffer.from([0x0d], "utf16le"),
-          "\0"
+          mergeBytes(
+            "gdel\0\0\0\0\0\0\0",
+            Buffer.from([0x0d], "utf16le"),
+            "\0"
+          )
         );
+        let trailing = fillString(`I=947\tN=${gamertag}\tM=${gamertag}\tF=U\tA=${clientIp}\tP=1\tS=,,\tG=73\tAT=\tCL=511\tLV=1049601\tMD=0\tLA=${clientIp}\tHW=0\tRP=0\tMA=^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\tLO=enGB\tX=\tUS=0\tPRES=1\tVER=7\tC=,,,,,,,,\0+mgm\0\0\0\0\0\0\0\0IDENT=73\0`).split("IDENT=73\0")[1];
         this.clientSocket.write(
           mergeBytes(
             `+who\0\0\0\0\0\0\0`,
@@ -418,7 +440,7 @@ class CommandController {
 
             "\tLO=enGB\tX=\tUS=0\tPRES=1\tVER=7\tC=,,,,,,,,\0+mgm\0\0\0\0\0\0",
             Buffer.from([0x02, 0xcd], "utf16le"),
-            "IDENT=73\0"
+            `IDENT=73\0${trailing}`
           )
         );
         break;
@@ -432,27 +454,30 @@ class CommandController {
         break;
       }
       case "opup": {
-        this.clientSocket.write(mergeBytes(
-          "opup\0\0\0\0\0\0\0",
-          Buffer.from([0x0d], "utf16le"),
-          "\0"
-        ));
+        this.clientSocket.write(
+          mergeBytes(
+            "opup\0\0\0\0\0\0\0",
+            Buffer.from([0x0d], "utf16le"),
+            "\0"
+          )
+        );
         break;
       }
       case "rrup": {
         this.clientSocket.write(
-          "rrup\0\0\0\0\0\0\0",
-          Buffer.from([0x0d], "utf16le"),
-          "\0"
+          mergeBytes(
+            "rrup\0\0\0\0\0\0\0",
+            Buffer.from([0x0d], "utf16le"),
+            "\0"
+          )
         );
         break;
       }
       // Used to insta join game
       case "gqwk": {
+        console.log("gqwk packet! " + this.message);
         this.clientSocket.write(
-          "gqwknfind\0\0\0",
-          Buffer.from([0x0d], "utf16le"),
-          "\0"
+          mergeBytes("gqwknfind\0\0\0", Buffer.from([0x0d], "utf16le"), "\0")
         );
         break;
       }
@@ -467,7 +492,7 @@ function mergeBytes(...arrays) {
   const buffers = arrays.map((array) => Buffer.from(array));
   return Buffer.concat(buffers);
 }
-function PadMask(input, requiredByteLength) {
+function PadString(input, key, requiredByteLength, pad) {
   // Convert input string to UTF-8 encoded bytes
   const encoder = new TextEncoder();
   const byteArray = encoder.encode(input);
@@ -478,7 +503,7 @@ function PadMask(input, requiredByteLength) {
   }
 
   // Find the "MASK=" substring and extract current mask
-  const maskStartIndex = input.indexOf("MASK=") + 5; // 5 is the length of "MASK="
+  const maskStartIndex = input.indexOf(key) + key.length; // 5 is the length of "MASK="
   const maskEndIndex = input.indexOf("\t", maskStartIndex);
   const currentMask = input.substring(maskStartIndex, maskEndIndex);
 
@@ -489,7 +514,7 @@ function PadMask(input, requiredByteLength) {
   // Add padding if necessary
   let adjustedMask = currentMask;
   if (paddingBytesNeeded > 0) {
-    adjustedMask += "f".repeat(paddingBytesNeeded);
+    adjustedMask += pad.repeat(paddingBytesNeeded);
   }
 
   // Construct adjusted string with padded mask
@@ -499,5 +524,40 @@ function PadMask(input, requiredByteLength) {
     input.substring(maskEndIndex);
   return adjustedString;
 }
+function fillString(input, desiredLength, nullChar) {
 
+    // Calculate the number of padding characters needed
+    const paddingNeeded = desiredLength - input.length;
+
+    // If the input is already the desired length or longer, return it unchanged
+    if (paddingNeeded <= 0) {
+        return input;
+    }
+
+    // Add the necessary padding characters
+    const paddedString = input + nullChar.repeat(paddingNeeded);
+    return paddedString;
+}
+function getTime() {
+  const now = new Date();
+
+  const year = now.getFullYear();
+  const month = now.getMonth() + 1; // Months are zero indexed, so January is 0
+  const day = now.getDate();
+  const hours = now.getHours();
+  const minutes = now.getMinutes();
+  const seconds = now.getSeconds();
+
+  // Pad single digit values with leading zeros
+  const formattedMonth = month; // < 10 ? `0${month}` : month;
+  const formattedDay = day < 10 ? `0${day}` : day;
+  const formattedHours = hours < 10 ? `0${hours}` : hours;
+  const formattedMinutes = minutes < 10 ? `0${minutes}` : minutes;
+  const formattedSeconds = seconds < 10 ? `0${seconds}` : seconds;
+
+  // Construct the formatted date-time string
+  const formattedDateTime = `${year}.${formattedMonth}.${formattedDay}-${formattedHours}:${formattedMinutes}:${formattedSeconds}`;
+
+  return formattedDateTime;
+}
 module.exports = CommandController;

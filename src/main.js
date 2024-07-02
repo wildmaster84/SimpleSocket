@@ -84,7 +84,7 @@ class ServerManager {
       "cate"
     ];
 
-    sendHeartbeat(socket, 29);
+    sendHeartbeat(socket, 25, false);
     socket.on("data", (data) => {
       if (data.length < 4 || !schem.includes(data.toString().substring(0, 4))) {
         console.log(`invalid data ${data.toString()}`);
@@ -108,12 +108,12 @@ class ServerManager {
     });
   }
 }
-function sendHeartbeat(socket, interval) {
+function sendHeartbeat(socket, interval, sync) {
   const intervalMs = interval * 1000; // Convert seconds to milliseconds
   const message = `~png\0\0\0\0\0\0\0#REF=${getTime()}\0`;
   if (!socket.destroyed) {
-    socket.write(message);
-    setTimeout(sendHeartbeat, intervalMs, socket, interval);
+    if (sync) socket.write(message);
+    setTimeout(sendHeartbeat, intervalMs, socket, interval, true);
     console.log("[i] Sending heartbeat");
   } else {
     console.log("[i] Socket is destroyed, cannot send message");
