@@ -2,6 +2,8 @@ const Buffer = require("Buffer");
 const ConfigManager = require("./ConfigManager");
 const configManager = new ConfigManager("./config.yml");
 const config = configManager.getConfig();
+const crumbsManager = new ConfigManager("./crumbs.yml");
+const crumbs = crumbsManager.getConfig();
 
 class Utils {
   constructor() {}
@@ -78,6 +80,21 @@ class Utils {
     return config;
   }
 
+  getCrumbs(category) {
+    const categoryConfig = crumbs ? crumbs[category] : null;
+    if (!categoryConfig) {
+      this.log(`No configuration found for category: ${category}`, "warn");
+      return "";
+    }
+
+    return Object.entries(categoryConfig)
+      .map(
+        ([key, value]) =>
+          `${key}=${value !== undefined && value !== null ? value : ""}`
+      )
+      .join("\t");
+  }
+
   log(message, type = "default") {
     switch (type) {
       case "info": {
@@ -86,6 +103,10 @@ class Utils {
       }
       case "warn": {
         if (config.server.debug) console.warn(message);
+        break;
+      }
+      case "error": {
+        console.error(message);
         break;
       }
       default: {

@@ -14,7 +14,7 @@ let addr;
 //let params;
 let xuid;
 let gamertag;
-
+let uid;
 class Player {
   constructor(clientIP) {
     addr = clientIP;
@@ -29,6 +29,14 @@ class Player {
   setXUID(newXUID) {
     xuid = newXUID;
   }
+  setUID() {
+    uid = BigInt(
+      "0x" +
+        crypto.createHash("sha256").update(xuid).digest("hex").slice(0, 16)
+    )
+      .toString()
+      .slice(0, 16);
+  }
   getGamertag() {
     return gamertag;
   }
@@ -42,12 +50,7 @@ class Player {
     return xuid;
   }
   getUID() {
-    return BigInt(
-      "0x" +
-        crypto.createHash("sha256").update(xuid).digest("hex").slice(0, 16)
-    )
-      .toString()
-      .slice(0, 16);
+    return uid;
   }
   getAuthToken() {
     return crypto

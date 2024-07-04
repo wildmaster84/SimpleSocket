@@ -23,7 +23,7 @@ class CommandController {
   process() {
     const osKey = crypto
       .createHash("sha256")
-      .update(this.serverManager.serverIP)
+      .update(utils.getConfig().server.ip)
       .digest("hex")
       .slice(0, 32);
 
@@ -202,6 +202,7 @@ class CommandController {
             .replace("$", "")
             .toUpperCase()
         );
+        player.setUID();
         token = player.getAuthToken();
 
         utils.log(
@@ -242,7 +243,8 @@ class CommandController {
             utils.mergeBytes(
               "newsnew8\0\0",
               Buffer.from([0x02, 0x91], "utf16le"),
-              "MIN_TIME_SPENT_SYNCYING_TIME=1\tMAX_TIME_SPENT_SYNCYING_TIME=30\tMAX_TIME_TO_WAIT_FOR_START_TIME=30\tMAX_TIME_TO_WAIT_FOR_SILENT_CLIENT_READY=30\tMAX_TIME_TO_WAIT_FOR_COMMUNICATING_CLIENT_READY=45\tTIME_GAP_TO_LEAVE_BEFORE_START_TIME=5\tIDLE_TIMEOUT=30000\tSEARCH_QUERY_TIME_INTERVAL=30000\tNAT_TEST_PACKET_TIMEOUT=30000\tTOS_BUFFER_SIZE=250000\tNEWS_BUFFER_SIZE=85000\tLOG_OFF_ON_EXIT_ONLINE_MENU=FALSE\tTELEMETRY_FILTERS_FIRST_USE=\tTELEMETRY_FILTERS_NORMAL_USE=\tTIME_BETWEEN_STATS_CHECKS=30\tTIME_BETWEEN_ROAD_RULES_UPLOADS=1\tTIME_BETWEEN_ROAD_RULES_DOWNLOADS=900\tTIME_BEFORE_RETRY_AFTER_FAILED_BUDDY_UPLOAD=600\tTIME_BETWEEN_OFFLINE_PROGRESSION_UPLOAD=600\0"
+              utils.getCrumbs("news"),
+              "\0"
             )
           );
 
@@ -259,11 +261,16 @@ class CommandController {
         break;
       }
       case "usld": {
+        let crumb = utils
+          .getCrumbs("usld")
+          .replace("0000000000000000", "$" + player.getUID());
+
         this.clientSocket.write(
           utils.mergeBytes(
             `usld\0\0\0\0\0\0\0`,
             Buffer.from([0xc5], "utf16le"),
-            `SPM_EA=1\tSPM_PART=0\tIMGATE=0\tUID=$${player.getUID()}\tQMSG0="Wanna play?"\tQMSG1="I rule!"\tQMSG2=Doh!\tQMSG3="Mmmm... doughnuts."\tQMSG4="What time is it?"\tQMSG5="The truth is out of style."\0`
+            crumb,
+            "\0"
           )
         );
         break;
@@ -274,7 +281,9 @@ class CommandController {
           utils.mergeBytes(
             `slst\0\0\0\0\0\0`,
             Buffer.from([0x04], "utf16le"),
-            `)VIEW13=Rival2,"Rival 2 information",\tVIEW14=Rival3,"Rival 3 information",\tVIEW6=LastEvent1,"Recent Event 1 Details",\tVIEW15=Rival4,"Rival 4 information",\tVIEW7=LastEvent2,"Recent Event 2 Details",\tVIEW5=PlayerStatS,"Player Stats Summary",\tVIEW0=lobby,"Online Lobby Stats View",\tVIEW22=DriverDetai,"Driver details",\tVIEW16=Rival5,"Rival 5 information",\tVIEW8=LastEvent3,"Recent Event 3 Details",\tVIEW2=RoadRules,"Road Rules",\tVIEW17=Rival6,"Rival 6 information",\tVIEW9=LastEvent4,"Recent Event 4 Details",\tVIEW18=Rival7,"Rival 7 information",\tVIEW10=LastEvent5,"Recent Event 5 Details",\tVIEW19=Rival8,"Rival 8 information",\tVIEW23=RiderDetail,"Rider details",\tVIEW20=Rival9,"Rival 9 information",\tVIEW25=Friends,"Friends List",\tVIEW11=OfflineProg,"Offline Progression",\tVIEW4=NightBikeRR,"Night Bike Road Rules",\tVIEW26=PNetworkSta,"Paradise Network Stats",\tVIEW3=DayBikeRRs,"Day Bike Road Rules",\tVIEW1=DLC,"DLC Lobby Stats View",\tVIEW24=IsldDetails,"Island details",\tVIEW21=Rival10,"Rival 10 information",\tVIEW12=Rival1,"Rival 1 information",\tCOUNT=27\0`
+            `)`,
+            utils.getCrumbs("slst"),
+            `\0`
           )
         );
         break;
@@ -322,7 +331,7 @@ class CommandController {
 
             `\tLO=enGB\tX=\tUS=0\tPRES=1\tVER=7\tC=,,,,,,,,\0+mgm\0\0\0\0\0\0`,
             Buffer.from([0x02, 0xcd], "utf16le"),
-            `IDENT=73\tWHEN=2024.6.28-8:56:26\tNAME=${player.getGamertag()}\tHOST=@brobot948\tROOM=0\tMAXSIZE=${max}\tMINSIZE=${min}\tCOUNT=2\tPRIV=0\tCUSTFLAGS=413345024\tSYSFLAGS=64\tEVID=0\tEVGID=0\tNUMPART=1\tSEED=73\tGPSHOST=${player.getGamertag()}\tGPSREGION=0\tGAMEMODE=0\tGAMEPORT=3074\tVOIPPORT=0\tWHENC=2024.6.28-8:56:26\tSESS=None\tPLATPARAMS=None\tPARTSIZE0=9\tPARAMS=${params}\tPARTPARAMS0=\tOPPO0=@brobot948\tOPPART0=0\tOPFLAG0=0\tPRES0=0\tOPID0=${callID}\tADDR0=${this.serverManager.serverIP}\tLADDR0=127.0.0.3\tMADDR0=\tOPPARAM0=PUSMC1A3????,,c0-1,,,a,,,3a54e32a\tOPPO1=${player.getGamertag()}\tOPPART1=0\tOPFLAG1=413345024\tPRES1=0\tOPID1=${callID}\tADDR1=${player.getAddr()}\tLADDR1=${player.getAddr()}\tMADDR1=`,
+            `IDENT=73\tWHEN=2024.6.28-8:56:26\tNAME=${player.getGamertag()}\tHOST=@brobot948\tROOM=0\tMAXSIZE=${max}\tMINSIZE=${min}\tCOUNT=2\tPRIV=0\tCUSTFLAGS=413345024\tSYSFLAGS=64\tEVID=0\tEVGID=0\tNUMPART=1\tSEED=73\tGPSHOST=${player.getGamertag()}\tGPSREGION=0\tGAMEMODE=0\tGAMEPORT=3074\tVOIPPORT=0\tWHENC=2024.6.28-8:56:26\tSESS=None\tPLATPARAMS=None\tPARTSIZE0=9\tPARAMS=${params}\tPARTPARAMS0=\tOPPO0=@brobot948\tOPPART0=0\tOPFLAG0=0\tPRES0=0\tOPID0=${callID}\tADDR0=${utils.getConfig().server.ip}\tLADDR0=127.0.0.3\tMADDR0=\tOPPARAM0=PUSMC1A3????,,c0-1,,,a,,,3a54e32a\tOPPO1=${player.getGamertag()}\tOPPART1=0\tOPFLAG1=413345024\tPRES1=0\tOPID1=${callID}\tADDR1=${player.getAddr()}\tLADDR1=${player.getAddr()}\tMADDR1=`,
             player.getMacAddr(),
             `\tOPPARAM1=PUSMC1A3????,,c00,,,a,,,3a54e32a\0\0`
           )
@@ -373,7 +382,7 @@ class CommandController {
               [0xfb, 0xf3, 0xe3, 0xf3, 0xb6, 0xbc, 0xcd, 0xf1, 0xab, 0x80],
               "utf16le"
             ),
-            `\tPARTSIZE0=9\tPARAMS=${params}\tPARTPARAMS0=\tOPPO0=@brobot948\tOPPART0=0\tOPFLAG0=0\tPRES0=0\tOPID0=948\tADDR0=${this.serverManager.serverIP}\tLADDR0=127.0.0.3\tMADDR0=\tOPPARAM0=PUSMC1A3????,,c0-1,,,a,,,3a54e32a\tOPPO1=${player.getGamertag()}\tOPPART1=0\tOPFLAG1=413345024\tPRES1=0\tOPID1=${callID}\tADDR1=${player.getAddr()}\tLADDR1=${player.getAddr()}\tMADDR1=`,
+            `\tPARTSIZE0=9\tPARAMS=${params}\tPARTPARAMS0=\tOPPO0=@brobot948\tOPPART0=0\tOPFLAG0=0\tPRES0=0\tOPID0=948\tADDR0=${utils.getConfig().server.ip}\tLADDR0=127.0.0.3\tMADDR0=\tOPPARAM0=PUSMC1A3????,,c0-1,,,a,,,3a54e32a\tOPPO1=${player.getGamertag()}\tOPPART1=0\tOPFLAG1=413345024\tPRES1=0\tOPID1=${callID}\tADDR1=${player.getAddr()}\tLADDR1=${player.getAddr()}\tMADDR1=`,
             player.getMacAddr(),
             "\tOPPARAM1=PUSMC1A3????,,c00,,,a,,,3a54e32a\0\0"
           )
@@ -401,7 +410,7 @@ class CommandController {
               [0xfb, 0xf3, 0xe3, 0xf3, 0xb6, 0xbc, 0xcd, 0xf1, 0xab, 0x80],
               "utf16le"
             ),
-            `\tPARTSIZE0=9\tPARAMS=${params}\tPARTPARAMS0=\tOPPO0=@brobot948\tOPPART0=0\tOPFLAG0=0\tPRES0=0\tOPID0=948\tADDR0=${this.serverManager.serverIP}\tLADDR0=127.0.0.3\tMADDR0=\tOPPARAM0=PUSMC1A3????,,c0-1,,,a,,,3a54e32a\tOPPO1=${player.getGamertag()}\tOPPART1=0\tOPFLAG1=413345024\tPRES1=0\tOPID1=${callID}\tADDR1=${player.getAddr()}\tLADDR1=${player.getAddr()}\tMADDR1=`,
+            `\tPARTSIZE0=9\tPARAMS=${params}\tPARTPARAMS0=\tOPPO0=@brobot948\tOPPART0=0\tOPFLAG0=0\tPRES0=0\tOPID0=948\tADDR0=${utils.getConfig().server.ip}\tLADDR0=127.0.0.3\tMADDR0=\tOPPARAM0=PUSMC1A3????,,c0-1,,,a,,,3a54e32a\tOPPO1=${player.getGamertag()}\tOPPART1=0\tOPFLAG1=413345024\tPRES1=0\tOPID1=${callID}\tADDR1=${player.getAddr()}\tLADDR1=${player.getAddr()}\tMADDR1=`,
             player.getMacAddr(),
             "\tOPPARAM1=PUSMC1A3????,,c00,,,a,,,3a54e32a\0\0"
           )
