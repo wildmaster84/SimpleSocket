@@ -204,7 +204,7 @@ class CommandController {
         );
         player.setUID();
         token = player.getAuthToken();
-
+        player.setMAddr(this.message.split("MADDR=")[1].split("^")[0]);
         utils.log(
           `${player.getGamertag()}(XUID -> ${player.getXUID()}) joined with the IP: ${player.getAddr()}`
         );
@@ -220,7 +220,6 @@ class CommandController {
         break;
       }
       case "pers": {
-        player.setMAddr(this.message.split("MADDR=")[1].split("^")[0]);
         // KNAME and GNAME
         this.clientSocket.write(
           utils.mergeBytes(
