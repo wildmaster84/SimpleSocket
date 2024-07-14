@@ -14,7 +14,7 @@ class RequestController {
     let subDomain = this.data
       .toString()
       .split("clientString=")[1]
-      .split("\x0a")[0];
+      .split("-")[0].toUpperCase();
     let action = this.data.toString().split("TXN=")[1].split("\x0a")[0];
     let packet = this.data.slice(0, 4);
     if (packet == "fsys") {
@@ -26,26 +26,27 @@ class RequestController {
             // source: http://old.zenhax.com/fesl-ea-com-protocol-t1282.html
             Buffer.from([0x80, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0xfe]),
             // packet content
-            `domainPartition.domain=eagames\x0a`,
-            `messengerIp=68.46.244.148\x0a`,
-            `messengerPort=10135\x0a`,
-            `domainPartition.subDomain=beach\x0a`, // beach-360
-            `TXN=Hello\x0a`,
-            `activityTimeoutSecs=0\x0a`,
-            `curTime="Feb-08-2010 17:49:40 UTC"\x0a`,
-            `theaterIp=68.46.244.148\x0a`,
+            `domainPartition.domain=eagames\n`,
+            `messengerIp=68.46.244.148\n`,
+            `messengerPort=10135\n`,
+            `domainPartition.subDomain=${subDomain}\n`, // beach-360
+            `TXN=Hello\n`,
+            `activityTimeoutSecs=0\n`,
+            `curTime="Feb-08-2010 17:49:40 UTC"\n`,
+            `theaterIp=68.46.244.148\n`,
             `theaterPort=10135\0`
           ),
         );
+        
+      } else {
         this.socket.write(
           mergeBytes(
             // packet header
             `fsys`,
-            // source: http://old.zenhax.com/fesl-ea-com-protocol-t1282.html
             Buffer.from([0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x3d]),
-            `TXN=MemCheck\x0a`,
-            `memcheck.[]=0\x0a`,
-            `type=0\x0a`,
+            `TXN=MemCheck\n`,
+            `memcheck.[]=0\n`,
+            `type=0\n`,
             `salt=800225952\0`,
           ),
         );
