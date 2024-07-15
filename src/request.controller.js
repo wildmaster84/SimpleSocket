@@ -1,5 +1,6 @@
 const Buffer = require("Buffer");
-
+const { format } = require("date-fns");
+const Packet = require("./packet.object");
 class RequestController {
   constructor(data, socket) {
     this.data = data;
@@ -10,49 +11,70 @@ class RequestController {
     // fsys\x80\x00\x00\x01\x00\x00\x00\xbe
     // fsys\x80\x00\x00\x01\x00\x00\x00\xe7domainPartition.domain=eagames\nmessengerIp=10.10.10.113\nmessengerPort=13505\ndomainPartition.subDomain=NFS-2007\nTXN=Hello\nactivityTimeoutSecs=0\ncurTime="Nov-18-2023 03:58:33 UTC"\ntheaterIp=10.10.10.113\ntheaterPort=18195\x00
     console.log(this.data.toString());
-    let header = this.data.slice(0, 12);
-    let subDomain = this.data
-      .toString()
-      .split("clientString=")[1]
-      .split("-")[0].toUpperCase();
+
     let action = this.data.toString().split("TXN=")[1].split("\x0a")[0];
     let packet = this.data.slice(0, 4);
     if (packet == "fsys") {
       if (action == "Hello") {
-        this.socket.write(
-          mergeBytes(
-            // packet header
-            `fsys`,
-            // source: http://old.zenhax.com/fesl-ea-com-protocol-t1282.html
-            Buffer.from([0x80, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0xfe]),
-            // packet content
-            `domainPartition.domain=eagames\n`,
-            `messengerIp=68.46.244.148\n`,
-            `messengerPort=10135\n`,
-            `domainPartition.subDomain=${subDomain}\n`, // beach-360
-            `TXN=Hello\n`,
-            `activityTimeoutSecs=0\n`,
-            `curTime="Feb-08-2010 17:49:40 UTC"\n`,
-            `theaterIp=68.46.244.148\n`,
-            `theaterPort=10135\0`
-          ),
+        let subDomain = this.data
+          .toString()
+          .split("clientString=")[1]
+          .split("-")[0]
+          .toUpperCase();
+        let packet1 = mergeBytes(
+          `domainPartition.domain=eagames\x0A`,
+          `messengerIp=68.46.244.148\x0A`,
+          `messengerPort=10135\x0A`,
+          `domainPartition.subDomain=${subDomain}\x0A`, // beach-360
+          `TXN=Hello\x0A`,
+          `activityTimeoutSecs=0\x0A`,
+          `curTime="${this.time()}"\x0A`,
+          `theaterIp=68.46.244.148\x0A`,
+          `theaterPort=10135\0`
         );
-        
-      } else {
+        let packet2 = mergeBytes(
+          `TXN=MemCheck\x0a`,
+          `memcheck.[]=0\x0a`,
+          `type=0\x0a`,
+          `salt=800225952\0`
+        );
         this.socket.write(
-          mergeBytes(
-            // packet header
-            `fsys`,
-            Buffer.from([0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x3d]),
-            `TXN=MemCheck\n`,
-            `memcheck.[]=0\n`,
-            `type=0\n`,
-            `salt=800225952\0`,
-          ),
+          new Packet(
+            mergeBytes(
+              // source: http://old.zenhax.com/fesl-ea-com-protocol-t1282.html
+              // Note: packet size is controlled by the header which is (header + body) | mister249
+              // the header MUST end with the packet size, in our case 230(0xE6)
+              `fsys`,
+              Buffer.from([0x80, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00])
+            ),
+            packet1
+          )
+        );
+
+        this.socket.write(
+          new Packet(
+            mergeBytes(
+              // packet header
+              // 61(0x3D)
+              `fsys`,
+              Buffer.from([0xc0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00])
+            ),
+            packet2
+          )
         );
       }
     }
     //this.socket.end();
+  }
+  time() {
+    const currentDate = new Date();
+
+    // Format the current date in UTC
+    const formattedDate = format(currentDate, "MMM-dd-yyyy HH:mm:ss 'UTC'", {
+      timeZone: "UTC"
+    });
+
+    return formattedDate;
   }
 }
 
@@ -60,4 +82,5 @@ function mergeBytes(...arrays) {
   const buffers = arrays.map((array) => Buffer.from(array));
   return Buffer.concat(buffers);
 }
+
 module.exports = RequestController;

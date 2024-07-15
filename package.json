@@ -4,7 +4,7 @@
   "main": "./src/main.js",
   "scripts": {
     "start": "node ./src/main.js",
-    "format": "npx prettier --write \"src/**/*.js\""
+    "format": "npx prettier --write \"src/**/*.js\" && npx eslint --fix"
   },
   "keywords": [],
   "author": "",
