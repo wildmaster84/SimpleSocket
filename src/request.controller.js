@@ -25,7 +25,7 @@ class RequestController {
           let packet1 = mergeBytes(
             `domainPartition.domain=eagames\x0A`,
             `messengerIp=68.46.244.148\x0A`,
-            `messengerPort=10135\x0A`,
+            `messengerPort=10136\x0A`,
             `domainPartition.subDomain=${subDomain}\x0A`, // beach-360
             `TXN=Hello\x0A`,
             `activityTimeoutSecs=0\x0A`,
@@ -37,7 +37,7 @@ class RequestController {
             `TXN=MemCheck\x0a`,
             `memcheck.[]=0\x0a`,
             `type=0\x0a`,
-            `salt=800225952\0`
+            `salt=yKjM1j4cc\0`
           );
           this.socket.write(
             new Packet(
@@ -64,7 +64,7 @@ class RequestController {
                 // packet header
                 // 61(0x3D)
                 `fsys`,
-                Buffer.from([0xc0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00])
+                Buffer.from([0xC0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00])
               ),
               packet2
             )
@@ -74,13 +74,11 @@ class RequestController {
       }
       case "acct": {
         // Todo: finish acct packet for xbox
-        let xuid = this.data.toString().split("xuid=")[1].split("\x0A")[0];
         let packet = mergeBytes(
-          `TXN=NuXBL360Login\x0A`,
-          `xuid=${xuid}\x0A`,
-          `userId=000000001\x0A`,
-          `masterUserId=000000001\x0A`,
-          `userName=wildmaster84\0`
+          `TXN=NuXBL360Login\x0a`,
+          `localizedMessage=Nope\x0a`,
+          `errorContainer.[]=0\x0a`,
+          `errorCode=101\0`
         );
         this.socket.write(
           new Packet(
