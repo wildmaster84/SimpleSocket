@@ -64,20 +64,22 @@ class RequestController {
                 // packet header
                 // 61(0x3D)
                 `fsys`,
-                Buffer.from([0xC0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00])
+                Buffer.from([0xc0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00])
               ),
               packet2
             )
           );
         }
+
         break;
       }
       case "acct": {
         // Todo: finish acct packet for xbox
+        let xuid = this.data.toString().split("xuid=")[1].split("\x0A")[0];
         let packet = mergeBytes(
-          `TXN=NuXBL360Login\x0a`,
-          `localizedMessage=Nope\x0a`,
+          `localizedMessage="The TOS Content is out of date."\x0a`,
           `errorContainer.[]=0\x0a`,
+          `TXN=NuXBL360Login\x0A`,
           `errorCode=101\0`
         );
         this.socket.write(
