@@ -28,17 +28,19 @@ class RequestController {
 
     // Switch between data type
     switch (contentType?.split(";")[0]) {
-      case "application/x-www-form-urlencoded": {
-        this.socket.write("HTTP/1.1 200 OK\r\nContent-Type: application/x-www-form-urlencoded\r\nContent-Length: 11\r\n\r\n<xml></xml>");
-        break;
-      }
-      case "application/json": {
-        this.socket.write("HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nContent-Length: 2\r\n\r\n{}");
-        break;
-      }
       default: {
         //console.log("Unsupported content type:", contentType);
-        console.log("Data", this.data.toString());
+        console.log("Data", request);
+            
+            if (request.split("/")[1] == null) {
+                // When xenia first tests the connection.
+                this.socket.write("HTTP/1.1 200 OK\nContent-Type: application/json\nContent-Length: 2\r\n\r\n{}");
+                this.socket.end();
+            } else {
+                // When xenia makes a put method to upload files.
+                this.socket.write("HTTP/1.1 201 CREATED");
+                this.socket.end();
+            }
         break;
       }
     }
