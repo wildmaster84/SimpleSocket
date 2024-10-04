@@ -1,7 +1,9 @@
 const fs = require('fs');
 const path = require('path');
 const Buffer = require('Buffer');
+let connections = false;
 class RequestController {
+    
     constructor(data, socket) {
         this.socket = socket;
         this.dataBuffer = []; // Buffer to store incoming data chunks
@@ -84,10 +86,11 @@ class RequestController {
             this.saveToFile(filePath);
         } else if (method === "GET") {
             // Handle GET requests
-            if (this.data.toString().split("/media/titlegroups/")[0] != null) {
-                this.socket.write("HTTP/1.1 200 OK\nContent-Type: application/json\nContent-Length: 320\r\n\r\n{\"blobs\":[{\"fileName\":\"foo\bar\blob.txt,binary\",\"clientFileTime\":\"2012-01-01T01:02:03.1234567Z\",\"displayName\":\"Friendly Name\",\"size\":12,\"etag\":\"0x8CEB3E4F8F3A5BF\"},{\"fileName\":\"foo\bar\blob2.txt,binary\",\"displayName\":\"Blob 2\",\"size\":4,\"etag\":\"0x8CEB3FE57F1A142\"},{\"fileName\":\"foo\jsonblob.txt,json\",\"size\":15,\"etag\":\"0x8CEB40152B4A6F8\"}],\"pagingInfo\":{\"continuationToken\":\"54\",}}");
+            let json = "{\"blobs\":[{\"fileName\":\"hw201209\\slot0\\semaphore.txt,binary\",\"displayName\":\"Blob2\",\"size\":29,\"etag\":\"0x945CEF625C5B9B9D\"},],\"pagingInfo\":{\"continuationToken\":\"54\"}}";
+            if (this.data.toString().split("/media/titlegroups/")[0] == null) {
+                this.socket.write("HTTP/1.1 201 Created\nContent-Type: application/json\nContent-Length: " + json.length + "\r\n\r\n" + json);
             } else {
-                this.socket.write("HTTP/1.1 200 OK\nContent-Length: 0\r\n\r\n");
+                this.socket.write("HTTP/1.1 200 OK\nContent-Length: 2\r\n\r\n{}");
             }
             this.socket.end();
         } else {
